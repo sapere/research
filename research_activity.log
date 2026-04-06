@@ -17,3 +17,4 @@
 [2026-04-06T11:24:29Z] TASK-2.2: COMPLETE — Created 02_Research_Worker.agent.md with 9-step Ralph Loop, three-strike rule, hallucination prevention, narrator summary spec, and self-improvement step.
 [2026-04-06T11:25:20Z] TASK-2.3: COMPLETE — Created 03_Research_Reviewer.agent.md with read-only tools, 7-step verification protocol, and structured PASS/FAIL verdict format.
 [2026-04-06T11:26:12Z] TASK-2.4: COMPLETE — Created 04_Research_Coordinator.agent.md with Planner→Worker→Reviewer orchestration loop and 2 handoffs.
+[2026-04-06T11:26:58Z] TASK-3.1: COMPLETE — Created source-evaluation/SKILL.md with 7-step procedure covering domain authority, date, author credentials, paywall detection, bias, URL accessibility, and quality rating.

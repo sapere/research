@@ -22,7 +22,7 @@
 
 ## Phase 3: Skills & Instructions
 
-- [ ] TASK-3.1: Create `.github/skills/source-evaluation/SKILL.md` — YAML frontmatter (name: source-evaluation, description, user-invocable: false) + 7-step procedural instructions for evaluating source credibility, domain authority, publication date, author credentials, paywall detection, bias assessment, and accessibility as specified in PRD Section 4.1.
+- [x] TASK-3.1: Create `.github/skills/source-evaluation/SKILL.md` — YAML frontmatter (name: source-evaluation, description, user-invocable: false) + 7-step procedural instructions for evaluating source credibility, domain authority, publication date, author credentials, paywall detection, bias assessment, and accessibility as specified in PRD Section 4.1.
 - [ ] TASK-3.2: Create `.github/skills/synthesis-writing/SKILL.md` — YAML frontmatter (name: synthesis-writing, description, user-invocable: false) + 7-step procedural instructions for writing synthesis sections with inline citations, evidence tables, flags, terminology handling, summaries, and length targets as specified in PRD Section 4.2.
 - [ ] TASK-3.3: Create `.github/instructions/research-conventions.instructions.md` — YAML frontmatter (`applyTo: "**/*.md"`) + markdown editing conventions: ATX headers, `-` for lists, checkbox format, table format, citation format, relative paths, ISO timestamps, UTF-8/LF as specified in PRD Section 5.1.
 
