@@ -4,6 +4,19 @@
 ## Generated: April 6, 2026
 ## Status: COMPLETE
 
+> **State Legend:**
+> - `[ ]` Not Started — Available for assignment
+> - `[~]` In Progress — Currently being worked on (max 1 at a time)
+> - `[x]` Complete — Verified and committed
+> - `[!]` Failed — 3 strikes exhausted
+> - `[B]` Blocked — Waiting on failed dependency
+>
+> **Status Protocol:**
+> - `NOT_STARTED` — Planner has not yet populated tasks
+> - `IN_PROGRESS` — Worker loop is active
+> - `COMPLETE` — All tasks verified, loop should terminate
+> - `BLOCKED` — Systemic failure, human intervention needed
+
 ---
 
 ## Phase 1: Architectural Foundation & Inspiration

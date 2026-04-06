@@ -28,7 +28,7 @@
 
 ## Phase 4: State Machine Templates
 
-- [ ] TASK-4.1: Update `RESEARCH_PROGRESS.md` header to include the five-state legend (`[ ]` Not Started, `[~]` In Progress, `[x]` Complete, `[!]` Failed, `[B]` Blocked) and the `## Status:` header protocol (NOT_STARTED, IN_PROGRESS, COMPLETE, BLOCKED) as documented in PRD Section 6.
+- [x] TASK-4.1: Update `RESEARCH_PROGRESS.md` header to include the five-state legend (`[ ]` Not Started, `[~]` In Progress, `[x]` Complete, `[!]` Failed, `[B]` Blocked) and the `## Status:` header protocol (NOT_STARTED, IN_PROGRESS, COMPLETE, BLOCKED) as documented in PRD Section 6.
 
 ## Phase 5: Self-Improvement Infrastructure
 
