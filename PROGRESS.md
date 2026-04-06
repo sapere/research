@@ -11,7 +11,7 @@
 ## Phase 1: Foundation & Configuration
 
 - [x] TASK-1.1: Create `.vscode/settings.json` with `chat.subagents.allowInvocationsFromSubagents: true` and `chat.useCustomizationsInParentRepositories: true`.
-- [ ] TASK-1.2: Create directory structure: `.github/skills/source-evaluation/`, `.github/skills/synthesis-writing/`, `.github/instructions/`.
+- [x] TASK-1.2: Create directory structure: `.github/skills/source-evaluation/`, `.github/skills/synthesis-writing/`, `.github/instructions/`.
 
 ## Phase 2: Core Agent Files
 
