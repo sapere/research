@@ -21,3 +21,4 @@
 [2026-04-06T11:27:34Z] TASK-3.2: COMPLETE — Created synthesis-writing/SKILL.md with 7-step procedure covering section structure, citation format, evidence presentation, flags, terminology, relevance statements, and length targets.
 [2026-04-06T11:28:05Z] TASK-3.3: COMPLETE — Created research-conventions.instructions.md with applyTo **/*.md and markdown formatting conventions.
 [2026-04-06T11:28:56Z] TASK-4.1: COMPLETE — Updated RESEARCH_PROGRESS.md header with 5-state legend and status protocol documentation.
+[2026-04-06T11:29:33Z] TASK-5.1: COMPLETE — Created /memories/repo/research-agent-conventions.md with memory-to-skill promotion pipeline, user memory limit, and agent architecture summary.

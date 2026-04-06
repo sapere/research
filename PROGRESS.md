@@ -32,7 +32,7 @@
 
 ## Phase 5: Self-Improvement Infrastructure
 
-- [ ] TASK-5.1: Create `/memories/repo/research-agent-conventions.md` with a note documenting the memory-to-skill promotion pipeline (Detect→Record→Evaluate→Create→Clean) and the 200-line user memory limit as specified in PRD Section 7.
+- [x] TASK-5.1: Create `/memories/repo/research-agent-conventions.md` with a note documenting the memory-to-skill promotion pipeline (Detect→Record→Evaluate→Create→Clean) and the 200-line user memory limit as specified in PRD Section 7.
 
 ## Phase 6: Validation & Integration
 
