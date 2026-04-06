@@ -4,7 +4,6 @@ description: A read-only verification agent that checks research quality, source
 user-invocable: false
 disable-model-invocation: false
 tools: ['read', 'search', 'web', 'fetch']
-model: ['Claude Opus 4.5 (copilot)']
 ---
 
 # Research Reviewer — Read-Only Verification Agent

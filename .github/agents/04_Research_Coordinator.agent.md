@@ -3,7 +3,6 @@ name: Research Coordinator
 description: Top-level orchestrator that manages the Planner, Worker, and Reviewer pipeline for autonomous research execution.
 tools: ['agent', 'read', 'edit']
 agents: ['Research Planner', 'Research Worker', 'Research Reviewer']
-model: ['Claude Opus 4.5 (copilot)']
 handoffs:
   - label: Start Planning
     agent: Research Planner

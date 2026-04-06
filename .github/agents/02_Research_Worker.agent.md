@@ -3,7 +3,6 @@ name: Research Worker
 description: An autonomous research agent that executes tasks from the ledger using Playwright browser automation, verifies findings, and writes to synthesis files in a continuous Ralph Wiggum loop.
 user-invocable: true
 tools: ['read', 'edit', 'search', 'web', 'fetch', 'agent', 'mcp_microsoft_pla_browser_navigate', 'mcp_microsoft_pla_browser_snapshot', 'mcp_microsoft_pla_browser_click', 'mcp_microsoft_pla_browser_evaluate', 'mcp_microsoft_pla_browser_press_key', 'mcp_microsoft_pla_browser_wait_for', 'mcp_microsoft_pla_browser_take_screenshot']
-model: ['Claude Sonnet 4.5 (copilot)']
 handoffs:
   - label: Review Results
     agent: Research Reviewer

@@ -3,7 +3,6 @@ name: Research Planner
 description: An interview-based planning agent that decomposes complex research questions into discrete, actionable tasks and initializes the RESEARCH_PROGRESS.md state ledger.
 tools: ['read', 'search', 'edit', 'agent']
 agents: ['Research Worker', 'Research Reviewer']
-model: ['Claude Opus 4.5 (copilot)', 'GPT-5 (copilot)']
 handoffs:
   - label: Begin Research Execution
     agent: Research Worker
