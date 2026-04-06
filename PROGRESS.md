@@ -36,7 +36,7 @@
 
 ## Phase 6: Validation & Integration
 
-- [ ] TASK-6.1: Validate all YAML frontmatter in the four `.agent.md` files. Read each file, check that `tools`, `agents`, `model`, and `handoffs` fields use correct array/object syntax. Fix any formatting errors. Log validation results to `research_activity.log`.
+- [x] TASK-6.1: Validate all YAML frontmatter in the four `.agent.md` files. Read each file, check that `tools`, `agents`, `model`, and `handoffs` fields use correct array/object syntax. Fix any formatting errors. Log validation results to `research_activity.log`.
 - [ ] TASK-6.2: Validate both `.github/skills/*/SKILL.md` files have correct frontmatter (`name`, `description`, `user-invocable`). Read each file and confirm body content matches PRD specifications. Fix any issues.
 - [ ] TASK-6.3: Verify `.github/instructions/research-conventions.instructions.md` has valid `applyTo` glob pattern and body matches PRD conventions. Fix any issues.
 - [ ] TASK-6.4: Final integration check — Read all generated files, verify cross-references (agent names in `agents:` arrays match actual agent `name:` fields, skill names are consistent, handoff agent names match). Log final status to `research_activity.log` and update this ledger's Status header to `COMPLETE`.
