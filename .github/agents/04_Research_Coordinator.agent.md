@@ -53,18 +53,18 @@ Iterate through each task in the ledger:
    ```
    runSubagent("Research Worker", "Execute TASK-X.Y from RESEARCH_PROGRESS.md. Follow the Ralph Loop protocol.")
    ```
-3. **Verify** — invoke the Research Reviewer to check the output:
-   ```
-   runSubagent("Research Reviewer", "Review TASK-X.Y output in research_synthesis.md. Check against RESEARCH_BRIEF.md requirements.")
-   ```
-4. **Evaluate verdict:**
-   - If `VERDICT: PASS` → Continue to next task.
-   - If `VERDICT: FAIL` → Re-invoke the Worker with the Reviewer's feedback:
-     ```
-     runSubagent("Research Worker", "Fix issues in TASK-X.Y: [reviewer feedback]. Then re-mark the task complete.")
-     ```
-   - Maximum 2 fix attempts per task. After 2 failed fixes, log a warning and continue.
-5. **Repeat** until all tasks are marked `- [x]` or the ledger Status is `COMPLETE`.
+3. **Continue** to the next task immediately. Do NOT invoke the Reviewer after each task.
+4. **Repeat** until all tasks are marked `- [x]` or the ledger Status is `COMPLETE`.
+
+**REVIEW BUDGET:** Invoke the Research Reviewer **exactly once** after ALL tasks are complete — not per-task. This prevents the review loop from draining premium requests.
+
+```
+runSubagent("Research Reviewer", "Perform a final quality review of the complete research_synthesis.md against RESEARCH_BRIEF.md requirements. Return a single consolidated VERDICT.")
+```
+
+**If VERDICT: FAIL** — Re-invoke the Worker with the Reviewer's specific feedback. Maximum 2 fix attempts total. After 2 attempts, log remaining issues and finalize.
+
+**TERMINATION RULE:** Once Status is `COMPLETE` and the single review pass is done, STOP. Do not re-invoke any agents. Do not loop. Return the final summary to the user.
 
 ### Step 4: Completion (AUTO-SUMMARY)
 

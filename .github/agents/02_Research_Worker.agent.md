@@ -7,7 +7,7 @@ handoffs:
   - label: Review Results
     agent: Research Reviewer
     prompt: "Review the latest completed task in RESEARCH_PROGRESS.md. Check research_synthesis.md for quality."
-    send: true
+    send: false
 ---
 
 # Research Worker — Autonomous Ralph Wiggum Loop
@@ -121,6 +121,8 @@ EOF
 ### Step 9: LOOP — Continue
 
 Return to **Step 1** immediately. Do not pause. Do not ask for permission. Continue until all tasks are complete or you hit the three-strike halt.
+
+**TERMINATION GUARD:** Do NOT hand off to the Reviewer after every task. The Coordinator manages review scheduling. When Status is `COMPLETE`, STOP immediately — do not invoke any further handoffs or reviews.
 
 ---
 
