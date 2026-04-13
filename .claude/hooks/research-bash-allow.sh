@@ -28,9 +28,18 @@ fi
 
 # --- C1 fix: Newline injection guard ---
 # grep tests ^...$ per line, so a multi-line CMD where any single line matches
-# would auto-allow the entire command. Block multi-line unless it's a heredoc.
-if [[ "$CMD" == *$'\n'* ]] && [[ ! "$CMD" =~ ^cat\ .*\<\<\ *\'?[A-Z] ]]; then
-  exit 0  # multi-line non-heredoc — do not auto-allow
+# would auto-allow the entire command. Block multi-line unless it's a clean heredoc.
+if [[ "$CMD" == *$'\n'* ]]; then
+  # Must start with cat << to be a heredoc
+  if [[ ! "$CMD" =~ ^cat\ .*\<\<\ *\'?([A-Z_]+)\'? ]]; then
+    exit 0  # multi-line non-heredoc — reject
+  fi
+  # Extract the heredoc delimiter and verify nothing comes after it
+  HEREDOC_DELIM="${BASH_REMATCH[1]}"
+  AFTER_DELIM=$(echo "$CMD" | sed -n "/^${HEREDOC_DELIM}$/,\$p" | tail -n +2)
+  if [[ -n "$AFTER_DELIM" ]]; then
+    exit 0  # commands after heredoc closing delimiter — reject
+  fi
 fi
 
 # --- C2 fix: Workspace containment ---
@@ -38,16 +47,18 @@ fi
 WORKSPACE="$(cd "$(dirname "$0")/../.." && pwd)"
 
 # For rules that write files, extract the target path and verify containment.
-# Returns 0 if the path is under $WORKSPACE or is a bare relative filename.
+# Returns 0 if the path is under $WORKSPACE with no traversal.
 path_ok() {
   local target="$1"
-  # Bare filename (no slashes) — always OK (resolves to cwd which is workspace)
+  # Reject any path containing .. (traversal)
+  if [[ "$target" == *..* ]]; then return 1; fi
+  # Bare filename (no slashes) — OK (resolves to cwd which is workspace)
   if [[ "$target" != */* ]]; then return 0; fi
-  # Absolute path — must start with workspace
+  # Absolute path — must start with workspace prefix
   if [[ "$target" == /* ]]; then
     [[ "$target" == "$WORKSPACE"/* ]] && return 0 || return 1
   fi
-  # Relative path with dirs — always OK (relative to workspace cwd)
+  # Relative path without .. — OK (relative to workspace cwd)
   return 0
 }
 
@@ -128,7 +139,9 @@ fi
 
 # ========== RULE 6: mv synthesis merge ==========
 if echo "$CMD" | grep -qE "^mv (.+/)?research_synthesis_merged\.md (.+/)?research_synthesis\.md$"; then
-  allow
+  local_src=$(echo "$CMD" | awk '{print $2}')
+  local_dst=$(echo "$CMD" | awk '{print $3}')
+  path_ok "$local_src" && path_ok "$local_dst" && allow
 fi
 
 # ========== RULE 7: sed substitution on research files ==========
