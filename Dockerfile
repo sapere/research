@@ -38,15 +38,15 @@ RUN npm install -g @anthropic-ai/claude-code
 USER researcher
 
 # Register Playwright MCP at project scope (not user scope).
-# User-scope config (~/.claude.json) gets overwritten by the runtime auth mount.
-# Project-scope config (.mcp.json in WORKDIR) persists independently.
+# Project-scope config (.mcp.json in WORKDIR) persists independently of auth mount.
 RUN claude mcp add --scope project playwright -- npx @playwright/mcp@latest
 
-# Mount host ~/.claude/ read-only at runtime for subscription auth tokens.
-# Docker provides the sandbox — --dangerously-skip-permissions is safe here.
-VOLUME /home/researcher/.claude
+# Auth: host credentials mounted to /tmp/claude-auth/ (read-only).
+# Entrypoint copies them with correct ownership before running claude.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["claude", "--dangerously-skip-permissions", "-p"]
+USER root
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["@Research Coordinator what is this repo about"]
 
 # ---------- OpenCode (local LLMs via Ollama, or remote APIs) ----------

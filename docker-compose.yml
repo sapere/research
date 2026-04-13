@@ -5,7 +5,8 @@ services:
       context: .
       target: claude
     volumes:
-      - ~/.claude:/home/researcher/.claude:ro   # Auth tokens (read-only)
+      - ~/.claude/.credentials.json:/tmp/claude-auth/credentials.json:ro
+      - ~/.claude.json:/tmp/claude-auth/claude.json:ro
       - ./research-results:/home/researcher/research/research-results
 
   # --- OpenCode (local LLMs via Ollama) ---
