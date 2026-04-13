@@ -98,7 +98,7 @@ After successfully generating and saving `01_PRD.md`, `PROGRESS.md`, and `guardr
 > - `PROGRESS.md` — Granular execution ledger for the autonomous loop
 > - `guardrails.md` — Coding standards and boundary constraints
 >
-> If you approve of this plan, or after you have made your manual adjustments, invoke the **@Ralph_Orchestrator** agent to begin the autonomous implementation loop.
+> If you approve of this plan, or after you have made your manual adjustments, invoke the **Ralph Orchestrator** agent to begin the autonomous implementation loop.
 
 ---
 

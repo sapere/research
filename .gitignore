@@ -1,0 +1,5 @@
+# Playwright MCP session artifacts
+.playwright-mcp/
+
+# Research output (generated per-run, not tracked)
+research-results/

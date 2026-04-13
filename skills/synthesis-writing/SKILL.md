@@ -37,18 +37,26 @@ Use this skill when writing or appending sections to `research_synthesis.md`. Ev
    - If data is estimated or approximate, use: `[APPROXIMATE]`
    - If a source was paywalled and only a preview was accessible: `[PARTIAL_ACCESS]`
 
-5. **Terminology**
+5. **Claim Confidence Scoring**
+   - For key claims (statistics, regulatory facts, competitive positioning), append a confidence tag: `[CONF: HIGH]`, `[CONF: MED]`, or `[CONF: LOW]`
+   - **HIGH**: 2+ independent HIGH-quality sources agree, claim is specific and verifiable
+   - **MED**: Single HIGH-quality source, or 2+ MEDIUM-quality sources agree
+   - **LOW**: Single MEDIUM/LOW source, conflicting sources unresolved, or partial access only
+   - Apply to the top 3-5 most consequential claims per section — not every sentence
+   - In evidence tables, add a Confidence column when the table has quantitative data
+
+6. **Terminology**
    - Define domain-specific terms, acronyms, and jargon on first use
    - Format: "Term in bold followed by explanation" — e.g., **GOAP** (Goal-Oriented Action Planning) is a...
    - After first definition, use the term freely without re-explaining
    - If a term appears for the first time in a later section, re-define it there
 
-6. **Relevance Statement**
+7. **Relevance Statement**
    - End each section with 1–2 sentences connecting the findings back to the research objective
    - Format: "These findings are relevant to [objective] because [reason]."
    - This helps the narrator summary generator understand the significance of each section
 
-7. **Length and Scope**
+8. **Length and Scope**
    - Target 200–500 words per task section unless the task explicitly specifies more
    - Do not pad sections with filler content — prefer concise, dense writing
    - If insufficient data was found, state this explicitly rather than stretching thin findings

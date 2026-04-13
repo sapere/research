@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:bun.sh)",
+      "WebFetch(domain:tc39.es)",
+      "WebFetch(domain:futuresearch.ai)",
+      "WebFetch(domain:stateofjs.com)",
+      "Edit(/**/RESEARCH_PROGRESS.md)",
+      "Edit(/**/RESEARCH_BRIEF.md)",
+      "Edit(/**/research_synthesis*.md)",
+      "Edit(/**/research_guardrails.md)",
+      "Edit(/**/research_sources.md)",
+      "Edit(/**/research_narrator_summary.md)",
+      "Edit(/**/research_review_memo.md)",
+
+      "Write(/**/RESEARCH_PROGRESS.md)",
+      "Write(/**/RESEARCH_BRIEF.md)",
+      "Write(/**/research_synthesis*.md)",
+      "Write(/**/research_guardrails.md)",
+      "Write(/**/research_sources.md)",
+      "Write(/**/research_activity.log)",
+      "Write(/**/research_narrator_summary.md)",
+      "Write(/**/research_review_memo.md)",
+
+      "Bash(rtk ls:*)",
+      "Bash(rtk grep:*)",
+      "Bash(rtk wc:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/research-bash-allow.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
