@@ -46,17 +46,21 @@ allow() {
   exit 0
 }
 
-# 1. Tranco domain trust check (read-only)
-#    Matches both shapes:
-#      a) DOMAIN="..."; grep -Fxq "$DOMAIN" .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
-#      b) grep -Fxq "..." .../tranco-domains.txt 2>/dev/null && echo ... || echo ...
-#      c) echo "..." | rev | cut -d. -f1-2 | rev  (subdomain extraction)
-#    All are read-only with fixed output — safe to auto-allow.
-#    Negative check excludes dangerous operators but permits 2>/dev/null (stderr redirect).
-if echo "$CMD" | grep -qE 'tranco-domains\.txt' && echo "$CMD" | grep -qE '(^grep |; grep |&& echo )' && ! echo "$CMD" | grep -qE '(rm |sudo |[^2]>/)'; then
+# 1. Tranco domain trust check (read-only, fully anchored)
+#    a) DOMAIN="..."; grep -Fxq "$DOMAIN" .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
+if echo "$CMD" | grep -qE '^DOMAIN="[^"]+"; grep -Fxq "\$DOMAIN" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
   allow
 fi
-if echo "$CMD" | grep -qE '^(DOMAIN=|echo )[^;]*\| rev \| cut'; then
+#    b) bare grep: grep -Fxq "..." .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
+if echo "$CMD" | grep -qE '^grep -Fxq "[^"]+" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
+  allow
+fi
+#    c) subdomain extraction: echo "..." | rev | cut -d. -f1-2 | rev
+if echo "$CMD" | grep -qE '^echo "[^"]+" \| rev \| cut -d\. -f1-2 \| rev$'; then
+  allow
+fi
+#    d) variable form: echo "$DOMAIN" | rev | cut -d. -f1-2 | rev
+if echo "$CMD" | grep -qE '^echo "\$DOMAIN" \| rev \| cut -d\. -f1-2 \| rev$'; then
   allow
 fi
 
