@@ -23,10 +23,7 @@
       "Write(/**/research_review_memo.md)",
       "Bash(rtk ls:*)",
       "Bash(rtk grep:*)",
-      "Bash(rtk wc:*)",
-      "Read(//tmp/**)",
-      "Bash(cat)",
-      "Bash(bash test_tranco_poison.sh)"
+      "Bash(rtk wc:*)"
     ]
   },
   "hooks": {
