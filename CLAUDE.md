@@ -95,7 +95,7 @@ Workers choose extraction tools per-URL based on domain trust. This prevents bot
 ## Docker
 
 Two build targets in the multi-stage Dockerfile:
-- `claude` — Claude Code CLI + Anthropic subscription auth (mounted read-only from host `~/.claude/`)
+- `claude` — Claude Code CLI + Anthropic subscription auth (credentials mounted read-only to `/tmp/claude-auth/`, copied by entrypoint)
 - `opencode` — OpenCode CLI + Ollama local LLMs (host network for `localhost:11434`)
 
 Both include Playwright + Chromium, jq, and all repo files. Docker provides filesystem isolation — agents cannot access host files outside mounted volumes, mitigating prompt injection → file access risks. The Bash hook still runs inside as a secondary defense.

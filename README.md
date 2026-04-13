@@ -203,6 +203,6 @@ Docker provides filesystem isolation — the container cannot read your host fil
 3. `docker compose run claude "@Research Coordinator your topic here"`
 4. Results appear in `./research-results/` on your host
 
-The `claude` target mounts `~/.claude/` read-only for subscription auth tokens. The `opencode` target uses host networking to reach Ollama on `localhost:11434`.
+The `claude` target mounts auth credentials (`~/.claude/.credentials.json` and `~/.claude.json`) read-only into `/tmp/claude-auth/`. The entrypoint copies them with correct ownership before running. The `opencode` target uses host networking to reach Ollama on `localhost:11434`.
 
 **Image includes:** Node 20, Chromium (for Playwright MCP), jq, Claude Code CLI (or OpenCode), all agent definitions and hooks. No API keys baked in.
