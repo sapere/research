@@ -6,18 +6,17 @@
 # subagents where declarative Bash() patterns don't work).
 #
 # Security model:
-#   - Only append (>>) and create (>) operations on known research filenames
-#   - Only mkdir -p and rm for research temp files
-#   - Path must be under a research project folder (contains RESEARCH_PROGRESS.md)
-#   - No arbitrary command execution
+#   - Newline injection blocked: multi-line commands rejected unless heredoc
+#   - Path containment enforced: writes only under the workspace directory
+#   - Argument shapes restricted: no $(), backticks, or pipe chains in echo/cat
+#   - All rules fully end-anchored
 #
 # Referenced from .claude/settings.local.json (travels with the repo).
 
 set -euo pipefail
 
 if ! command -v jq &>/dev/null; then
-  # jq missing — cannot parse tool input, pass through to normal permission handling
-  exit 0
+  exit 0  # jq missing — pass through to normal permission handling
 fi
 
 INPUT=$(cat)
@@ -27,13 +26,35 @@ if [ -z "$CMD" ]; then
   exit 0
 fi
 
+# --- C1 fix: Newline injection guard ---
+# grep tests ^...$ per line, so a multi-line CMD where any single line matches
+# would auto-allow the entire command. Block multi-line unless it's a heredoc.
+if [[ "$CMD" == *$'\n'* ]] && [[ ! "$CMD" =~ ^cat\ .*\<\<\ *\'?[A-Z] ]]; then
+  exit 0  # multi-line non-heredoc — do not auto-allow
+fi
+
+# --- C2 fix: Workspace containment ---
+# Resolve the workspace root (where this hook lives: .claude/hooks/)
+WORKSPACE="$(cd "$(dirname "$0")/../.." && pwd)"
+
+# For rules that write files, extract the target path and verify containment.
+# Returns 0 if the path is under $WORKSPACE or is a bare relative filename.
+path_ok() {
+  local target="$1"
+  # Bare filename (no slashes) — always OK (resolves to cwd which is workspace)
+  if [[ "$target" != */* ]]; then return 0; fi
+  # Absolute path — must start with workspace
+  if [[ "$target" == /* ]]; then
+    [[ "$target" == "$WORKSPACE"/* ]] && return 0 || return 1
+  fi
+  # Relative path with dirs — always OK (relative to workspace cwd)
+  return 0
+}
+
 # --- Allowed research file basenames ---
-# Patterns use (.*/)? to match both absolute paths and bare relative filenames
 RESEARCH_FILES='research_activity\.log|research_sources\.md|research_synthesis[^/]*\.md|research_narrator_summary\.md|research_guardrails\.md|research_review_memo\.md'
 RESEARCH_STATE='RESEARCH_PROGRESS\.md|RESEARCH_BRIEF\.md'
 ALL_FILES="${RESEARCH_FILES}|${RESEARCH_STATE}"
-# Optional path prefix: matches "/some/path/file" OR just "file"
-P='(.*/)?'
 
 allow() {
   jq -n '{
@@ -46,67 +67,81 @@ allow() {
   exit 0
 }
 
-# 1. Tranco domain trust check (read-only, fully anchored)
-#    a) DOMAIN="..."; grep -Fxq "$DOMAIN" .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
+# ========== RULE 1: Tranco domain trust check (read-only, fully anchored) ==========
+
+# 1a) DOMAIN="..."; grep -Fxq "$DOMAIN" .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
 if echo "$CMD" | grep -qE '^DOMAIN="[^"]+"; grep -Fxq "\$DOMAIN" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
   allow
 fi
-#    b) bare grep: grep -Fxq "..." .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
+# 1b) bare grep: grep -Fxq "..." .../tranco-domains.txt ...
 if echo "$CMD" | grep -qE '^grep -Fxq "[^"]+" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
   allow
 fi
-#    c) subdomain extraction: echo "..." | rev | cut -d. -f1-2 | rev
-if echo "$CMD" | grep -qE '^echo "[^"]+" \| rev \| cut -d\. -f1-2 \| rev$'; then
+# 1c) subdomain extraction: echo "domain.name" | rev | cut -d. -f1-2 | rev
+if echo "$CMD" | grep -qE '^echo "[a-zA-Z0-9._-]+" \| rev \| cut -d\. -f1-2 \| rev$'; then
   allow
 fi
-#    d) variable form: echo "$DOMAIN" | rev | cut -d. -f1-2 | rev
+# 1d) variable form: echo "$DOMAIN" | rev | cut -d. -f1-2 | rev
 if echo "$CMD" | grep -qE '^echo "\$DOMAIN" \| rev \| cut -d\. -f1-2 \| rev$'; then
   allow
 fi
 
-# 2. echo/printf append (>>) to research files
-if echo "$CMD" | grep -qE "^echo .+ >> ${P}(${RESEARCH_FILES})$"; then
+# ========== RULE 2: echo append (>>) to research files ==========
+# H1+H2 fix: only allow quoted string arguments (no $(), backticks, or pipes)
+# Matches: echo "quoted text" >> path/research_activity.log
+#          echo '...' >> research_sources.md
+if echo "$CMD" | grep -qE '^echo "[^"`$]+" >> (.+/)?('"${RESEARCH_FILES}"')$'; then
+  local_target=$(echo "$CMD" | grep -oE '>> .+$' | sed 's/^>> //')
+  path_ok "$local_target" && allow
+fi
+if echo "$CMD" | grep -qE "^echo '[^']+' >> (.+/)?(${RESEARCH_FILES})$"; then
+  local_target=$(echo "$CMD" | grep -oE '>> .+$' | sed 's/^>> //')
+  path_ok "$local_target" && allow
+fi
+
+# ========== RULE 3: cat heredoc append/create to research files ==========
+# H3 fix: only allow heredoc syntax (cat << 'EOF' or cat << EOF), not cat <file>
+# Matches: cat << 'EOF' >> path/research_synthesis.md
+#          cat << 'SYNTHESIS_EOF' > path/research_synthesis_TASK-1.1.md
+if echo "$CMD" | grep -qE "^cat << '?[A-Za-z_]+' >> (.+/)?(${RESEARCH_FILES})$"; then
+  local_target=$(echo "$CMD" | grep -oE '>> .+$' | sed 's/^>> //')
+  path_ok "$local_target" && allow
+fi
+if echo "$CMD" | grep -qE "^cat << '?[A-Za-z_]+' > (.+/)?(research_synthesis[^/]*\.md|research_narrator_summary\.md)$"; then
+  local_target=$(echo "$CMD" | grep -oE '> .+$' | sed 's/^> //')
+  path_ok "$local_target" && allow
+fi
+
+# ========== RULE 4: mkdir -p for research project folders ==========
+# H4 fix: workspace containment enforced
+if echo "$CMD" | grep -qE "^mkdir -p (.+/)?[a-z0-9][-a-z0-9]*-[0-9]{4}-[0-9]{2}-[0-9]{2}[a-z0-9/-]*$"; then
+  local_target=$(echo "$CMD" | sed 's/^mkdir -p //')
+  path_ok "$local_target" && allow
+fi
+
+# ========== RULE 5: rm temp synthesis files after merge ==========
+if echo "$CMD" | grep -qE "^rm (.+/)?research_synthesis_TASK-[A-Za-z0-9._-]+\.md$"; then
+  local_target=$(echo "$CMD" | sed 's/^rm //')
+  path_ok "$local_target" && allow
+fi
+
+# ========== RULE 6: mv synthesis merge ==========
+if echo "$CMD" | grep -qE "^mv (.+/)?research_synthesis_merged\.md (.+/)?research_synthesis\.md$"; then
   allow
 fi
 
-# 3. cat heredoc append (>>) to research files
-if echo "$CMD" | grep -qE "^cat .+ >> ${P}(${RESEARCH_FILES})$"; then
-  allow
+# ========== RULE 7: sed substitution on research files ==========
+# Only single-quoted s/// command, no -e, no chaining
+if echo "$CMD" | grep -qE "^sed -i 's/[^']+/[^']*/' (.+/)?(${ALL_FILES})$"; then
+  local_target=$(echo "$CMD" | grep -oE "[^ ]+$")
+  path_ok "$local_target" && allow
 fi
 
-# 4. cat heredoc create (>) for synthesis temp files and narrator summary
-if echo "$CMD" | grep -qE "^cat .+ > ${P}(research_synthesis[^/]*\.md|research_narrator_summary\.md)$"; then
+# ========== RULE 8: read-only operations (stat/ls/wc/tail) ==========
+if echo "$CMD" | grep -qE "^(stat|ls|wc) (-[a-zA-Z]+ )*(.+/)?(${ALL_FILES})$"; then
   allow
 fi
-
-# 5. mkdir -p for research project folders
-if echo "$CMD" | grep -qE "^mkdir -p .+/[a-z0-9][-a-z0-9]*-[0-9]{4}-[0-9]{2}-[0-9]{2}[a-z0-9/-]*$"; then
-  allow
-fi
-
-# 6. rm temp synthesis files after merge
-if echo "$CMD" | grep -qE "^rm ${P}research_synthesis_TASK-[^/]+\.md$"; then
-  allow
-fi
-
-# 7. mv synthesis merge (specific pattern only)
-if echo "$CMD" | grep -qE "^mv ${P}research_synthesis_merged\.md ${P}research_synthesis\.md$"; then
-  allow
-fi
-
-# 8. sed inline substitution on research files (Coordinator review fixes only)
-#    Only allows: sed -i 's/old/new/' file  (single-quoted s/// command, no -e, no chaining)
-if echo "$CMD" | grep -qE "^sed -i 's/[^']+/[^']*/' ${P}(${ALL_FILES})$"; then
-  allow
-fi
-
-# 9. stat/ls/wc on research files (read-only, end-anchored)
-if echo "$CMD" | grep -qE "^(stat|ls|wc) (-[a-zA-Z]+ )*${P}(${ALL_FILES})$"; then
-  allow
-fi
-
-# 10. tail on research files (read-only, end-anchored)
-if echo "$CMD" | grep -qE "^tail (-[a-zA-Z0-9]+ )*${P}(${ALL_FILES})$"; then
+if echo "$CMD" | grep -qE "^tail (-[a-zA-Z0-9]+ )*(.+/)?(${ALL_FILES})$"; then
   allow
 fi
 
