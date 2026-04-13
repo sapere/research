@@ -1,0 +1,30 @@
+services:
+  # --- Claude Code (Anthropic subscription) ---
+  claude:
+    build:
+      context: .
+      target: claude
+    volumes:
+      - ~/.claude:/home/researcher/.claude:ro   # Auth tokens (read-only)
+      - ./research-results:/home/researcher/research/research-results
+
+  # --- OpenCode (local LLMs via Ollama) ---
+  opencode:
+    build:
+      context: .
+      target: opencode
+    network_mode: host  # Access Ollama on localhost:11434
+    volumes:
+      - ./research-results:/home/researcher/research/research-results
+
+# Usage:
+#
+# Claude Code (subscription):
+#   docker compose build claude
+#   docker compose run claude "@Research Coordinator compare SQLite and DuckDB JSON support"
+#
+# OpenCode (local LLMs):
+#   ollama pull qwen3:32b    # reasoning tier
+#   ollama pull qwen3:8b     # execution tier
+#   docker compose build opencode
+#   docker compose run opencode "@Research Coordinator compare SQLite and DuckDB JSON support"

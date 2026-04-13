@@ -115,6 +115,27 @@ Reviews the plan, then:
 
 Executes tasks from the generated PROGRESS.md.
 
+### Docker (Sandboxed)
+
+Two targets: `claude` (Anthropic subscription) and `opencode` (local LLMs via Ollama).
+
+**Claude Code:**
+```bash
+claude login                    # one-time: authenticate on host
+docker compose build claude
+docker compose run claude "@Research Coordinator compare SQLite and DuckDB JSON support"
+```
+
+**OpenCode + Ollama (fully local, no cloud):**
+```bash
+ollama pull qwen3:32b           # reasoning tier (Coordinator, Planner)
+ollama pull qwen3:8b            # execution tier (Worker, Reviewer)
+docker compose build opencode
+docker compose run opencode "@Research Coordinator compare SQLite and DuckDB JSON support"
+```
+
+Results appear in `./research-results/`. Docker provides filesystem isolation — the container cannot access host files outside mounted volumes. See `instructions/model-strategy.instructions.md` for model tier mapping.
+
 ## How It Works
 
 Agents coordinate through a **file-based state machine** — markdown files are the sole communication mechanism. No shared memory, no databases. Each agent invocation starts fresh (amnesia by design).
@@ -164,4 +185,24 @@ research-results/          # Output folders (gitignored, one per research run)
 .claude/
   settings.local.json      # Permissions (Edit rules, WebSearch, WebFetch)
   hooks/                   # PreToolUse hook for Bash auto-allow
+Dockerfile                 # Multi-stage: claude + opencode targets
+docker-compose.yml         # Run with one command
 ```
+
+## Running in Docker
+
+Docker provides filesystem isolation — the container cannot read your host files (SSH keys, credentials, etc.) even if an agent is tricked by prompt injection. The Bash auto-allow hook still runs inside the container as a secondary defense layer.
+
+**What you need on the host:**
+- Docker
+- `claude login` (one-time, for the `claude` target) OR Ollama running (for the `opencode` target)
+
+**How it works:**
+1. Clone this repo
+2. `docker-compose build claude` (or `opencode`)
+3. `docker-compose run claude "@Research Coordinator your topic here"`
+4. Results appear in `./research-results/` on your host
+
+The `claude` target mounts `~/.claude/` read-only for subscription auth tokens. The `opencode` target uses host networking to reach Ollama on `localhost:11434`.
+
+**Image includes:** Node 20, Chromium (for Playwright MCP), jq, Claude Code CLI (or OpenCode), all agent definitions and hooks. No API keys baked in.

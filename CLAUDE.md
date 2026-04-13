@@ -18,8 +18,10 @@ instructions/      # Conventions: research-conventions, model-strategy, state-ma
 skills/            # Reusable procedures: source-evaluation, synthesis-writing
 research-results/  # Output folders (gitignored, one per research run)
 .claude/
-  settings.local.json   # Permissions: WebSearch, WebFetch, Edit rules
+  settings.local.json   # Permissions: WebSearch, WebFetch, Edit/Write rules
   hooks/                # PreToolUse hook for Bash auto-allow
+Dockerfile              # Multi-stage: claude + opencode targets
+docker-compose.yml      # One-command run for both targets
 ```
 
 Research projects create their output in `research-results/` (e.g., `research-results/competitive-landscape-saas-2026-04-13/`).
@@ -87,5 +89,13 @@ Workers choose extraction tools per-URL based on domain trust. This prevents bot
 
 - **Origin**: `sapere/research` — primary
 - **Upstream**: `maverock24/Research` — community fork
-- **Main branch**: `master` (default branch for PRs)
+- **Main branch**: `main` (default branch for PRs)
 - Never auto-commit. User commits when ready.
+
+## Docker
+
+Two build targets in the multi-stage Dockerfile:
+- `claude` — Claude Code CLI + Anthropic subscription auth (mounted read-only from host `~/.claude/`)
+- `opencode` — OpenCode CLI + Ollama local LLMs (host network for `localhost:11434`)
+
+Both include Playwright + Chromium, jq, and all repo files. Docker provides filesystem isolation — agents cannot access host files outside mounted volumes, mitigating prompt injection → file access risks. The Bash hook still runs inside as a secondary defense.
