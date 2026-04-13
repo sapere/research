@@ -35,12 +35,13 @@ You are a **fully autonomous** Code Analysis Agent. You execute exactly one `Sou
 ### Step 2: SELECT — Scope One Unit of Work
 
 1. If the prompt names `TASK-X.Y`, execute only that task.
-2. Otherwise, scan RESEARCH_PROGRESS.md for the first `Source: CODE` task marked `- [ ]` (Not Started), `- [!]` (Failed/Retry), `- [!1]` (retry interrupted), or `- [~]` (stale In Progress).
+2. Otherwise, scan RESEARCH_PROGRESS.md for the first `Source: CODE` task marked `- [ ]` (Not Started), `- [!]` (Failed/Retry), `- [!1]` (retry dispatched), `- [~]` (stale In Progress), or `- [~1]` (stale In Progress retry).
 3. If no open code-analysis task exists, return `NO_WORK`.
 
 ### Step 3: MARK — Claim the Task
 
-Change the selected task from `- [ ]`, `- [!]`, `- [!1]`, or `- [~]` to `- [~]` using a minimal `edit` operation.
+- If this is a fresh task (`- [ ]`, `- [!]`, or `- [~]`), change to `- [~]` (In Progress).
+- If this is a retry (`- [!1]` or `- [~1]`), change to `- [~1]` (In Progress, retry) to preserve the retry count.
 
 ### Step 4: EXECUTE — Analysis Pipeline
 
@@ -140,7 +141,7 @@ EOF
 
 ### Step 7: UPDATE — Mark Complete
 
-1. **Sequential mode (default):** Change task from `- [~]` to `- [x]` in RESEARCH_PROGRESS.md.
+1. **Sequential mode (default):** Change task from `- [~]` (or `- [~1]` for retries) to `- [x]` in RESEARCH_PROGRESS.md.
    **Parallel mode:** Do NOT edit RESEARCH_PROGRESS.md. Report completion status in your RETURN message — the Coordinator will update the ledger.
 2. Append to activity log:
    ```bash

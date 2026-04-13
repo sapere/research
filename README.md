@@ -143,7 +143,7 @@ Worker            Code Analyst
    research_synthesis.md
 ```
 
-**Task states:** `[ ]` Not Started -> `[~]` In Progress -> `[x]` Complete or `[!]` Failed -> `[!1]` Retrying -> `[!!]` Exhausted. See [state-machine.instructions.md](instructions/state-machine.instructions.md) for the full spec.
+**Task states:** `[ ]` Not Started -> `[~]` In Progress -> `[x]` Complete or `[!]` Failed -> `[!1]` Retrying -> `[~1]` In Progress (retry) -> `[x]` or `[!!]` Exhausted. See [state-machine.instructions.md](instructions/state-machine.instructions.md) for the full spec.
 
 **Parallel execution:** Independent tasks run concurrently (up to 4). Workers write to task-scoped temp files to prevent race conditions. The Coordinator merges results and owns all ledger updates during parallel dispatch.
 

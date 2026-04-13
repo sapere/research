@@ -44,7 +44,7 @@ You are a **fully autonomous** Research Execution Agent. You execute exactly one
 ### Step 2: SELECT — Scope One Unit of Work
 
 1. If the prompt names `TASK-X.Y`, execute only that task.
-2. Otherwise, scan RESEARCH_PROGRESS.md for the **first** task marked `- [ ]` (Not Started), `- [!]` (Failed/Retry), `- [!1]` (retry interrupted), or `- [~]` (stale In Progress from a crashed session).
+2. Otherwise, scan RESEARCH_PROGRESS.md for the **first** task marked `- [ ]` (Not Started), `- [!]` (Failed/Retry), `- [!1]` (retry dispatched), `- [~]` (stale In Progress), or `- [~1]` (stale In Progress retry).
 3. If the prompt is a review-fix pass, scope work only to the affected section(s) and cited issues.
 4. If there is no open task and no review-fix scope, return `NO_WORK`.
 
@@ -203,9 +203,9 @@ EOF
 
 ### Step 7: UPDATE — Mark Complete
 
-1. **Sequential mode (default):** Change the task from `- [~]` to `- [x]` in RESEARCH_PROGRESS.md using a minimal `edit` operation:
+1. **Sequential mode (default):** Change the task from `- [~]` (or `- [~1]` for retries) to `- [x]` in RESEARCH_PROGRESS.md using a minimal `edit` operation:
    ```
-   oldString: "- [~] TASK-X.Y: Description"
+   oldString: "- [~] TASK-X.Y: Description"   (or "- [~1] TASK-X.Y: Description")
    newString: "- [x] TASK-X.Y: Description"
    ```
    **Parallel mode:** Do NOT edit RESEARCH_PROGRESS.md. Report completion status in your RETURN message — the Coordinator will update the ledger.
