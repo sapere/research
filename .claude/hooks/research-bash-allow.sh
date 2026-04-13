@@ -70,11 +70,12 @@ allow() {
 # ========== RULE 1: Tranco domain trust check (read-only, fully anchored) ==========
 
 # 1a) DOMAIN="..."; grep -Fxq "$DOMAIN" .../tranco-domains.txt 2>/dev/null && echo "TRUSTED" || echo "UNTRUSTED"
-if echo "$CMD" | grep -qE '^DOMAIN="[^"]+"; grep -Fxq "\$DOMAIN" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
+#     Domain value restricted to [a-zA-Z0-9._-] to block $() and backtick injection
+if echo "$CMD" | grep -qE '^DOMAIN="[a-zA-Z0-9._-]+"; grep -Fxq "\$DOMAIN" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
   allow
 fi
-# 1b) bare grep: grep -Fxq "..." .../tranco-domains.txt ...
-if echo "$CMD" | grep -qE '^grep -Fxq "[^"]+" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
+# 1b) bare grep: grep -Fxq "domain" .../tranco-domains.txt ...
+if echo "$CMD" | grep -qE '^grep -Fxq "[a-zA-Z0-9._-]+" [^ ]+tranco-domains\.txt 2>/dev/null && echo "TRUSTED" \|\| echo "UNTRUSTED"$'; then
   allow
 fi
 # 1c) subdomain extraction: echo "domain.name" | rev | cut -d. -f1-2 | rev
