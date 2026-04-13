@@ -46,8 +46,10 @@ allow() {
   exit 0
 }
 
-# 1. grep for Tranco domain trust check (read-only, safe)
-if echo "$CMD" | grep -qE "^grep .+tranco-domains"; then
+# 1. grep for Tranco domain trust check (read-only, exact command shape)
+#    Allows: grep -Fxq "domain" ~/.claude/hooks/tranco-domains.txt ...
+#    Anchored: must end with tranco-domains.txt (optional 2>/dev/null suffix)
+if echo "$CMD" | grep -qE "^grep -[A-Za-z]+ [^ ]+ [^ ]*tranco-domains\.txt( 2>/dev/null)?$"; then
   allow
 fi
 
@@ -81,18 +83,19 @@ if echo "$CMD" | grep -qE "^mv ${P}research_synthesis_merged\.md ${P}research_sy
   allow
 fi
 
-# 8. sed inline edits on research files (used by Coordinator for fixes)
-if echo "$CMD" | grep -qE "^sed -i .+ ${P}(${ALL_FILES})$"; then
+# 8. sed inline substitution on research files (Coordinator review fixes only)
+#    Only allows: sed -i 's/old/new/' file  (single-quoted s/// command, no -e, no chaining)
+if echo "$CMD" | grep -qE "^sed -i 's/[^']+/[^']*/' ${P}(${ALL_FILES})$"; then
   allow
 fi
 
-# 9. stat/ls/wc on research files (read-only, safe)
-if echo "$CMD" | grep -qE "^(stat|ls|wc) .+${P}(${ALL_FILES})"; then
+# 9. stat/ls/wc on research files (read-only, end-anchored)
+if echo "$CMD" | grep -qE "^(stat|ls|wc) (-[a-zA-Z]+ )*${P}(${ALL_FILES})$"; then
   allow
 fi
 
-# 10. tail on research files (read-only)
-if echo "$CMD" | grep -qE "^tail .+${P}(${ALL_FILES})"; then
+# 10. tail on research files (read-only, end-anchored)
+if echo "$CMD" | grep -qE "^tail (-[a-zA-Z0-9]+ )*${P}(${ALL_FILES})$"; then
   allow
 fi
 

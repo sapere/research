@@ -19,30 +19,32 @@ Workers update state by editing the checkbox prefix (e.g., `- [ ]` → `- [~]`).
 | State | Notation | Meaning | Set By |
 |-------|----------|---------|--------|
 | Not Started | `- [ ]` | Task is available for dispatch | Planner |
-| In Progress | `- [~]` | Worker has claimed the task | Worker |
+| In Progress | `- [~]` | Worker has claimed the task (first attempt) | Worker |
 | Complete | `- [x]` | Task finished successfully | Worker (sequential) or Coordinator (parallel) |
 | Failed | `- [!]` | Task failed, eligible for retry | Worker |
 | Retrying | `- [!1]` | Failed once, retry dispatched (attempt 2) | Coordinator |
+| In Progress (retry) | `- [~1]` | Worker has claimed the retry attempt | Worker |
 | Exhausted | `- [!!]` | Failed twice, no more retries | Coordinator |
 | Blocked | `- [B]` | Cannot run — prerequisite failed or unavailable | Coordinator |
 
 ## Valid Transitions
 
 ```
-[ ] ──→ [~]   Worker claims task
-[~] ──→ [x]   Task completed successfully
-[~] ──→ [!]   Task failed (first attempt)
-[~] ──→ [ ]   Crash recovery: Coordinator reclaims stale [~] task (previous session crashed)
+[ ] ──→ [~]    Worker claims task (first attempt)
+[~] ──→ [x]    Task completed successfully
+[~] ──→ [!]    Task failed (first attempt)
+[~] ──→ [ ]    Crash recovery: Coordinator reclaims stale [~] task
 
-[!] ──→ [!1]  Coordinator acknowledges failure, dispatches retry
-[!1] ──→ [~]  Worker claims retry
-[~] ──→ [x]   Retry succeeded
-[~] ──→ [!]   Retry failed — Coordinator escalates to [!!]
+[!] ──→ [!1]   Coordinator acknowledges failure, dispatches retry
+[!1] ──→ [~1]  Worker claims retry (preserves retry count)
+[~1] ──→ [x]   Retry succeeded
+[~1] ──→ [!]   Retry failed — Coordinator escalates to [!!]
+[~1] ──→ [!1]  Crash recovery: Coordinator reclaims stale [~1] as [!1] (retry count preserved)
 
-[!] ──→ [!!]  Coordinator escalates (when [!1] already recorded, meaning second failure)
+[!] ──→ [!!]   Coordinator escalates (when task was already [~1] before failure)
 [!!] ──→ (terminal)  No further transitions
 
-[ ] ──→ [B]   Coordinator blocks task (prerequisite is [!!] or [B])
+[ ] ──→ [B]    Coordinator blocks task (prerequisite is [!!] or [B])
 [B] ──→ (terminal)  No further transitions
 ```
 
@@ -54,14 +56,17 @@ Workers update state by editing the checkbox prefix (e.g., `- [ ]` → `- [~]`).
 | `[~]` → `[x]` | Worker (sequential) / Coordinator (parallel) | In parallel mode, Worker reports status, Coordinator updates ledger |
 | `[~]` → `[!]` | Worker | Three-strike rule triggered |
 | `[!]` → `[!1]` | Coordinator | Acknowledges failure, prepares retry |
-| `[!1]` → `[~]` | Worker | Claims retry task |
-| `[!]` → `[!!]` | Coordinator | Second failure after `[!1]` |
+| `[!1]` → `[~1]` | Worker | Claims retry task (retry count visible in ledger) |
+| `[~1]` → `[x]` | Worker (sequential) / Coordinator (parallel) | Retry succeeded |
+| `[~1]` → `[!]` | Worker | Retry failed |
+| `[!]` → `[!!]` | Coordinator | Second failure (task was [~1] before this [!]) |
 | `[ ]` → `[B]` | Coordinator | All prerequisites terminal |
-| `[~]` → `[ ]` | Coordinator | Crash recovery only |
+| `[~]` → `[ ]` | Coordinator | Crash recovery: first attempt |
+| `[~1]` → `[!1]` | Coordinator | Crash recovery: retry attempt (preserves count) |
 
 ## Staleness Rule
 
-A task in `[~]` state is considered stale if it was not completed in the current session. On session restart, the Coordinator reclaims all `[~]` tasks as `[ ]`. Workers encountering `[~]` during auto-select also treat it as claimable.
+A task in `[~]` state is considered stale if it was not completed in the current session. On session restart, the Coordinator reclaims `[~]` tasks as `[ ]` and `[~1]` tasks as `[!1]` (preserving the retry count). Workers encountering `[~]` or `[~1]` during auto-select also treat them as claimable.
 
 ## Terminal States
 

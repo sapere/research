@@ -52,7 +52,8 @@ You are a **fully autonomous** Research Execution Agent. You execute exactly one
 
 Follow the transition rules in `instructions/state-machine.instructions.md`.
 
-- If this is a fresh task, change the selected task from `- [ ]`, `- [!]`, `- [!1]`, or `- [~]` to `- [~]` (In Progress) using a minimal `edit` operation.
+- If this is a fresh task (`- [ ]`, `- [!]`, or `- [~]`), change to `- [~]` (In Progress).
+- If this is a retry (`- [!1]` or `- [~1]`), change to `- [~1]` (In Progress, retry) to preserve the retry count.
 - If this is a review-fix pass on an already complete task, do not change ledger state unless the prompt explicitly requests reopening the task.
 
 ### Step 4: EXECUTE — Discovery, Extraction, and Verification

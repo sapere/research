@@ -66,7 +66,7 @@ If validation fails with HALT items, report the specific errors and stop. Do not
 
 Before each dispatch cycle, classify open tasks by independence:
 
-1. **Read** `RESEARCH_PROGRESS.md` — collect all actionable tasks in the current batch: `- [ ]` (Not Started), `- [!]` (Failed/Retry), `- [!1]` (retry dispatched but interrupted — treat as `[!]`), and `- [~]` (stale In Progress — reclaim as if `[ ]`; a previous session crashed before completing it).
+1. **Read** `RESEARCH_PROGRESS.md` — collect all actionable tasks in the current batch: `- [ ]` (Not Started), `- [!]` (Failed/Retry), `- [!1]` (retry dispatched but interrupted — treat as `[!]`), `- [~]` (stale In Progress — reclaim as `[ ]`), and `- [~1]` (stale In Progress retry — reclaim as `[!1]`, preserving retry count).
 2. **Dependency scan** — a task is INDEPENDENT if it has no `Depends-on:` targeting any unfinished task. A task is DEPENDENT if any `Depends-on:` target is not yet `- [x]`. Note: `Cross-ref:` is a non-blocking hint for the Worker to connect findings — it does NOT affect scheduling.
 3. **Blocked cascade** — before dispatching, check all DEPENDENT tasks: if any `Depends-on:` prerequisite is in a terminal failure state (`- [!!]` or `- [B]`), promote the dependent task to `- [B] Blocked: prerequisite TASK-X.Y exhausted`. This prevents tasks from staying forever non-runnable.
    - **Hybrid project enforcement**: In projects with both `Source: CODE` and `Source: WEB` tasks, treat ALL `Source: WEB` tasks as DEPENDENT on the last `Source: CODE` task in the batch, regardless of explicit `Depends-on:` tags. Do not dispatch any WEB task until every CODE task in the current batch is `- [x]`. This is structural, not advisory — do not override even if WEB tasks have no explicit dependencies.
@@ -89,8 +89,9 @@ Before each dispatch cycle, classify open tasks by independence:
 
 **Retry protocol:**
 - First failure: Worker marks task `- [!]`. Coordinator changes it to `- [!1]` (retry count = 1) and dispatches a retry. Include the prior failure reason in the dispatch prompt so the Worker can adjust strategy.
-- Second failure: Worker marks task `- [!]` again. Coordinator sees the existing `[!1]` and escalates to `- [!!]` (exhausted). No more retries.
-- The retry count is encoded inline in the ledger: `[!1]` = failed once, retrying. The Coordinator owns all transitions from `[!]` onward — the Worker always marks plain `[!]`, the Coordinator adds the count.
+- Worker claims the retry as `- [~1]` (not `[~]`), preserving the retry count in the ledger. This is critical for crash resilience — if the session crashes during a retry, `[~1]` tells the next Coordinator this was attempt 2.
+- Second failure: Worker marks task `- [!]` again. Coordinator sees the task was `[~1]` before failure and escalates to `- [!!]` (exhausted). No more retries.
+- Crash recovery: `[~1]` tasks are reclaimed as `[!1]` (not `[ ]`), preserving retry count.
 - When dispatching a retry, include in the prompt: `"RETRY for TASK-X.Y (attempt 2 of 2). Prior failure: [reason from Worker return]. Try a different approach."`
 
 **Parallelism guardrails:**

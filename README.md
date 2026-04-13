@@ -54,6 +54,18 @@ See [model-strategy.instructions.md](instructions/model-strategy.instructions.md
 @Research Coordinator research the current state of LLM observability tools and frameworks
 ```
 
+More example prompts:
+
+```
+@Research Coordinator compare SQLite, DuckDB, and LibSQL as embedded databases for app developers in 2025-2026
+
+@Research Coordinator what are the current best practices for rate limiting in distributed APIs?
+
+@Research Coordinator analyze the competitive landscape of open-source vector databases — Qdrant, Milvus, Weaviate, Chroma
+
+@Research Coordinator research WebAssembly runtimes for server-side use — Wasmtime, Wasmer, WasmEdge, performance and ecosystem
+```
+
 The Coordinator runs autonomously. Output lands in `research-results/`:
 
 ```
@@ -71,6 +83,10 @@ research-results/llm-observability-tools-2026-04-13/
 
 ```
 @Research Coordinator analyze /home/user/my-app and propose testing improvements
+
+@Research Coordinator review the error handling patterns in /home/user/api-service and compare with industry best practices
+
+@Research Coordinator audit /home/user/cli-tool for Rust idiomatic patterns and suggest improvements based on current community standards
 ```
 
 The Planner creates CODE tasks first (inspect the repo), then WEB tasks (research best practices). Code Analyst reads the codebase, Worker researches the web, synthesis combines both with improvement proposals.
