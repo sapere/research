@@ -186,7 +186,7 @@ research-results/          # Output folders (gitignored, one per research run)
   settings.local.json      # Permissions (Edit rules, WebSearch, WebFetch)
   hooks/                   # PreToolUse hook for Bash auto-allow
 Dockerfile                 # Multi-stage: claude + opencode targets
-docker compose.yml         # Run with one command
+docker-compose.yml         # Run with one command
 ```
 
 ## Running in Docker

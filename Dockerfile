@@ -39,8 +39,8 @@ USER researcher
 
 # Register Playwright MCP at project scope (not user scope).
 # User-scope config (~/.claude.json) gets overwritten by the runtime auth mount.
-# Project-scope config (.claude.json in WORKDIR) persists independently.
-RUN claude mcp add --scope project playwright -- npx @playwright/mcp@latest 2>/dev/null || true
+# Project-scope config (.mcp.json in WORKDIR) persists independently.
+RUN claude mcp add --scope project playwright -- npx @playwright/mcp@latest
 
 # Mount host ~/.claude/ read-only at runtime for subscription auth tokens.
 # Docker provides the sandbox — --dangerously-skip-permissions is safe here.
@@ -52,9 +52,11 @@ CMD ["@Research Coordinator what is this repo about"]
 # ---------- OpenCode (local LLMs via Ollama, or remote APIs) ----------
 FROM base AS opencode
 
-# Install OpenCode CLI to /usr/local/bin (accessible to all users)
+# Install OpenCode CLI — installer writes to $HOME/.opencode/bin,
+# then we move the binary to a shared path for the non-root runtime user.
 USER root
-RUN curl -fsSL https://opencode.ai/install | BINDIR=/usr/local/bin bash \
+RUN curl -fsSL https://opencode.ai/install | bash \
+    && mv /root/.opencode/bin/opencode /usr/local/bin/opencode \
     && opencode --version
 USER researcher
 
