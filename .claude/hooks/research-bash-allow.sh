@@ -152,11 +152,15 @@ if echo "$CMD" | grep -qE "^sed -i 's/[^']+/[^']*/' (.+/)?(${ALL_FILES})$"; then
 fi
 
 # ========== RULE 8: read-only operations (stat/ls/wc/tail) ==========
-if echo "$CMD" | grep -qE "^(stat|ls|wc) (-[a-zA-Z]+ )*(.+/)?(${ALL_FILES})$"; then
-  allow
+# Flags pattern: -l, -la (letter flags), -n 20 (flag+value), -5 (numeric shorthand)
+FLAGS='(-[a-zA-Z]+ |-[a-zA-Z] [0-9]+ |-[0-9]+ )*'
+if echo "$CMD" | grep -qE "^(stat|ls|wc) ${FLAGS}(.+/)?(${ALL_FILES})$"; then
+  local_target=$(echo "$CMD" | grep -oE "[^ ]+$")
+  path_ok "$local_target" && allow
 fi
-if echo "$CMD" | grep -qE "^tail (-[a-zA-Z0-9]+ )*(.+/)?(${ALL_FILES})$"; then
-  allow
+if echo "$CMD" | grep -qE "^tail ${FLAGS}(.+/)?(${ALL_FILES})$"; then
+  local_target=$(echo "$CMD" | grep -oE "[^ ]+$")
+  path_ok "$local_target" && allow
 fi
 
 # No match — pass through to Claude Code's normal permission handling
