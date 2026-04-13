@@ -37,8 +37,10 @@ USER root
 RUN npm install -g @anthropic-ai/claude-code
 USER researcher
 
-# Register Playwright MCP for Claude Code
-RUN claude mcp add playwright -- npx @playwright/mcp@latest 2>/dev/null || true
+# Register Playwright MCP at project scope (not user scope).
+# User-scope config (~/.claude.json) gets overwritten by the runtime auth mount.
+# Project-scope config (.claude.json in WORKDIR) persists independently.
+RUN claude mcp add --scope project playwright -- npx @playwright/mcp@latest 2>/dev/null || true
 
 # Mount host ~/.claude/ read-only at runtime for subscription auth tokens.
 # Docker provides the sandbox — --dangerously-skip-permissions is safe here.
@@ -50,10 +52,10 @@ CMD ["@Research Coordinator what is this repo about"]
 # ---------- OpenCode (local LLMs via Ollama, or remote APIs) ----------
 FROM base AS opencode
 
-# Install OpenCode CLI (Go binary)
+# Install OpenCode CLI to /usr/local/bin (accessible to all users)
 USER root
-RUN curl -fsSL https://opencode.ai/install.sh | bash 2>/dev/null || \
-    echo "OpenCode install script unavailable — install manually"
+RUN curl -fsSL https://opencode.ai/install | BINDIR=/usr/local/bin bash \
+    && opencode --version
 USER researcher
 
 # Configure: set model per agent in opencode.json or env vars.
